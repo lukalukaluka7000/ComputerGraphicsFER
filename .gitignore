@@ -1,0 +1,5 @@
+# gitignore for Python
+*.pyc
+__pycache__
+additional_features
+junk
