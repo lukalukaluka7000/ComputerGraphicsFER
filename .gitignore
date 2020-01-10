@@ -1,7 +1,5 @@
 # gitignore for Python
 *.pyc
 __pycache__
-additional_features
 junk
-~$ditional_features_ver1.odt
 Room.3ds
