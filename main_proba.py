@@ -6,7 +6,6 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 import numpy as np
-import random as rnd
 import math
 import time
 
@@ -150,22 +149,14 @@ def implementGLSL():
     #glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
     glUniform1i(uniformsLocations["texture"], 0)
     
-
-    
-    
     glUniform3fv(uniformsLocations["eye"], 1 , list(ociste))
     
-    #ambientData = [1.0,1.0,1.0,0.5]
-    ambientData = [rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),1.0]
     glUniform4fv(uniformsLocations["ambient"], 1, ambientData)
     
-    #specularData= [rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),1.0]
-    specularData= [0.99,0.98,0.90,0.5]
+    glUniform4fv(uniformsLocations["diffuse"], 1, diffuseData)
+    
     glUniform4fv(uniformsLocations["specular"], 1, specularData)
     
-    diffuseData = [0.88,0.88,0.88,0.5]
-    #diffuseData = [rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),1.0]
-    glUniform4fv(uniformsLocations["diffuse"], 1, diffuseData)
     
     glBindTexture(GL_TEXTURE_2D, r2.ids[i])
     glEnable(GL_TEXTURE_2D)
@@ -219,15 +210,36 @@ def renderSceneWithGLSL(i):
         sustav[i] = cestica(pot_tra)
     sustav[i].vrijeme_zivota-=1
     if(sustav[i].checkIFCloseToDead()):
-        sustav[i].skaliraj-=(sustav[i].minSkal/50)
-    if(sustav[i].checkIFDead()):
+        sub = 0.01
+        if sustav[i].skaliraj > 0.2:
+            sustav[i].skaliraj -= sub
+        else:
+            sustav[i].skaliraj=0.2
+        #sustav[i].skaliraj-=(sustav[i].minSkal)
+
+    if(sustav[i].checkIFDead() and time.time()- start > 2):
         del sustav[i]
         sustav[i] = cestica(pot_tra)
 
     #glUseProgram(program)
+    # VELIKI PROBLEM BIO STO JE OVAJ IZRACUN BIO POSLIJE GLUNIFORM4V (translate data) pa 
+    # je bio flickering
+    if(sustav[i].umjetni_snijeg == True):
+        sustav[i].trenY -= sustav[i].deltaY
+        sustav[i].trenX = sustav[i].amplituda*math.sin(sustav[i].trenY) + sustav[i].pomakX
+        #sustav[i].trenZ = sustav[i].amplituda*math.cos(sustav[i].trenY) + sustav[i].pomakZ
+        
+        translateData = [sustav[i].trenX, sustav[i].trenY, sustav[i].trenZ, 1]
+        glUniform4fv(uniformsLocations["translate"], 1, translateData)
+    else:
+        sustav[i].index += 1
+        sustav[i].trenY -= sustav[i].deltaY
+        sustav[i].trenZ = sustav[i].amplituda*math.cos(sustav[i].trenY) + sustav[i].pomakZ
 
-    translateData = [sustav[i].trenX, sustav[i].trenY, sustav[i].trenZ, 1]
-    glUniform4fv(uniformsLocations["translate"], 1, translateData)
+        translateData = [sustav[i].trajectory[sustav[i].index], sustav[i].trenY, sustav[i].trenZ, 1] #sustav[i].trajectory[sustav[i].index]
+        glUniform4fv(uniformsLocations["translate"], 1, translateData)
+        
+        #print(sustav[i].index)
 
     if(billboard == 1):
         v1_t = [v1[0]+sustav[i].trenX, v1[1]+sustav[i].trenY, v1[2]+sustav[i].trenZ]
@@ -248,9 +260,6 @@ def renderSceneWithGLSL(i):
         glUniform4fv(uniformsLocations["rotate"],1,rotateData)
         #glRotatef(alfa,os[0],os[1],os[2])
     
-    sustav[i].trenY -= sustav[i].deltaY
-    sustav[i].trenX = sustav[i].amplituda*math.sin(sustav[i].trenY) + sustav[i].pomakX
-    sustav[i].trenZ = sustav[i].amplituda*math.cos(sustav[i].trenY) + sustav[i].pomakZ
     
     scaleData = sustav[i].skaliraj
     glUniform1f(uniformsLocations["scale"], scaleData)
@@ -331,7 +340,7 @@ def crtajOsi():
 def mijenjajSvitlo():
     global lightPos
     global dodaj1,dodaj2,dodaj3
-    if(lightPos[0] >= 7 or lightPos[0] <= -7):
+    if(lightPos[0] >= 3.5 or lightPos[0] <= -7):
         dodaj1*=(-1)
     '''
     if(lightPos[1] >= 10 or lightPos[1] <= -3):
@@ -339,7 +348,7 @@ def mijenjajSvitlo():
     if(lightPos[2] >= 13 or lightPos[2] <= 0):
         dodaj3*=(-1)
     '''
-    lightPos[0] += dodaj1
+    lightPos[0] -= 2*dodaj1
     #lightPos[1] += dodaj2   
     #lightPos[2] += dodaj3
 def crtajSvitlo():
@@ -348,7 +357,7 @@ def crtajSvitlo():
     if moving_light == 1:
         mijenjajSvitlo()
     glPointSize(5.0)
-    glColor3f(1,1,1)
+    glColor3f(ambientData[0], ambientData[1], ambientData[2])
     glBegin(GL_POINTS)
     glVertex3f(lightPos[0],lightPos[1],lightPos[2])
     glEnd()
@@ -403,7 +412,8 @@ def crtajHelp():
     string5 = b"RMB HOLD + move - scaling"
     string6 = b"k - draw spline"
     string7 = b"b - billboard"
-
+    string8 = b"b - moving light"
+    
     glRasterPos2f(-6.5,8.0)
     for i in range(0,len(string1)):
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, string1[i])
@@ -425,11 +435,14 @@ def crtajHelp():
     glRasterPos2f(-6.5,8.0-3.0)
     for i in range(0,len(string7)):
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, string7[i])
+    glRasterPos2f(-6.5,8.0-3.5)
+    for i in range(0,len(string8)):
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, string8[i])    
     glPopMatrix()
 def renderSceneClassic():
     crtajBor()
     crtajOsi()
-    #crtajSvitlo()
+    crtajSvitlo()
     crtajAvion()
     crtajHelp()
     
@@ -443,15 +456,18 @@ def display():
     
     if iz_aviona == -1:
         look_at=[0,2.5,0]
+        ociste = np.array([-10,3,15])
         gluLookAt(
                 scale*ociste[0],scale*ociste[1],scale*ociste[2],
                 look_at[0],look_at[1],look_at[2],#look_at.x, look_at.y, look_at.z,
-                0, 10, 0) # up vector
+                0, 1, 0) # up vector
     elif iz_aviona == 1:
+        ociste = np.array([scale*pot_tra[0],scale*pot_tra[1]+5,scale*pot_tra[2]])
         gluLookAt(
-                scale*pot_tra[0],scale*pot_tra[1]+5,scale*pot_tra[2],
+                ociste[0],ociste[1],ociste[2],
                 pot_tra[0],0.0,pot_tra[2],#look_at.x, look_at.y, look_at.z,
                 pot_tra[0]+5, pot_tra[1]-5, pot_tra[2]+5) # up vector
+        
     
     glPushMatrix()
     renderSceneClassic()
@@ -509,8 +525,8 @@ def moja_tipkovnica(tipka,misx,misy):
     if tipka=='k':
         spline=spline*(-1)
     
-    #if tipka=='m':
-    #    moving_light*=-1
+    if tipka=='m':
+        moving_light*=-1
     if tipka== 'b':
         billboard=billboard*(-1)
     

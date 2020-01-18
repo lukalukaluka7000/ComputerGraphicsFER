@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import random as rnd
 from helper import mathematics as _m
 from helper import spline as _s
 from helper import readobj as _r
@@ -33,9 +34,9 @@ r2=None
 
 ociste = np.array([-10,3,15])
 look_at=[0,2.5,0]
-lightPos=[0.0, 0.0, 2.0]
+lightPos=[0.0, 0.0, 5.0]
 
-broj_cestica = 100
+broj_cestica = 120
 sustav=dict()
 sustav = { new_list: None for new_list in range(0, broj_cestica)}
 
@@ -95,3 +96,11 @@ rotating = False
 scaling = False
 
 pot_tra=[-7.3125,5.625,0.186875,0.375]
+
+ambientData = [rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),1.0]
+
+diffuseData = [0.5,0.5,0.5,0.5]
+#diffuseData = [rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),1.0]
+
+#specularData= [rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),rnd.uniform(0.5,1.00),1.0]
+specularData= [0.5,0.5,0.5,0.5]

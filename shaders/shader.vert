@@ -18,9 +18,19 @@ uniform vec3 fvEyePosition;
 uniform vec4 rotate;
 
 void main(){
-    vec3 pos =  (vec3(gl_ModelViewMatrix * vec4(vertexPosition.x,vertexPosition.y,vertexPosition.z, 1.0)));
+    //vec3 pos =  (vec3(gl_ModelViewMatrix * vec4(vertexPosition.x,vertexPosition.y,vertexPosition.z, 1.0)));
+    //vec3 pos =  (vec3(vec4(vertexPosition.x,vertexPosition.y,vertexPosition.z, 1.0)));
+    
+    //uncomment
+    vec3 pos =  vec3(vertexPosition.x,vertexPosition.y,vertexPosition.z);
+    //vec3 pos =  normalize(vec3(gl_ModelViewMatrix * vec4(vertexPosition, 1.0)));
 
+    
+    //vec3 pos =  vec3(gl_Vertex.x,gl_Vertex.y,gl_Vertex.z);
+    
     //vec3 pos =  (vec3(gl_ModelViewMatrix * vec4(vertexPosition.x+translateVector.x,vertexPosition.y+translateVector.y,vertexPosition.z+translateVector.z, 1.0)));
+    //vec3 pos =  (vec3(vec4(vertexPosition.x+translateVector.x,vertexPosition.y+translateVector.y,vertexPosition.z+translateVector.z, 1.0)));
+    
     //TODO: da se light Pametno ponasa
     //vec3 pos =  vec3(vertexPosition.x+translateVector.x,vertexPosition.y+translateVector.y,vertexPosition.z+translateVector.z);
 
@@ -65,9 +75,20 @@ void main(){
         vec4(0.0,0.0,scale,0.0),
         vec4(0.0,0.0,0.0,1.0));
 
-    vec4 final_position= transformMatrix*rotateMatrix*scaleMatrix*vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 0.5);
-    gl_Position = gl_ProjectionMatrix *gl_ModelViewMatrix *final_position;
+    //first transform object in its object space, then apply converting from one space to another
+    //vec4 final_position= transformMatrix*rotateMatrix*scaleMatrix*vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 0.5);
     
+    //vec4 final_position= transformMatrix* rotateMatrix*scaleMatrix*vec4(pos.x, pos.y, pos.z, 0.5);
+
+    vec4 final_position=  transformMatrix *rotateMatrix* scaleMatrix * vec4(vertexPosition.x, vertexPosition.y, vertexPosition.z, 0.5);
+    gl_Position = gl_ProjectionMatrix*gl_ModelViewMatrix*final_position;
+    
+    //this DOES NOT work - watch out for order of multiplying
+    //gl_Position = gl_ModelViewMatrix *gl_ProjectionMatrix *final_position;
+    //gl_Position = gl_ProjectionMatrix *gl_ModelViewMatrix *final_position;
+    
+    //gl_Position = gl_ModelViewProjectionMatrix *final_position;
+
 
     tC = Texcoord;
     
