@@ -456,7 +456,7 @@ def display():
     
     if iz_aviona == -1:
         look_at=[0,2.5,0]
-        ociste = np.array([-10,3,15])
+        #ociste = np.array([-10,3,15])
         gluLookAt(
                 scale*ociste[0],scale*ociste[1],scale*ociste[2],
                 look_at[0],look_at[1],look_at[2],#look_at.x, look_at.y, look_at.z,
